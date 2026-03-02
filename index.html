@@ -331,9 +331,7 @@
             <div class="stage">
                 <div class="img-wrap" id="imgWrap1">
                     <img id="bodyImg1" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a1.png" alt="Mapa relieve España">
-                    <div class="poly-area" id="polyArea1">
-                        <!-- SVG polygons injected here -->
-                    </div>
+                    <div class="poly-area" id="polyArea1"></div>
                 </div>
             </div>
         </div>
@@ -365,9 +363,7 @@
             <div class="stage">
                 <div class="img-wrap" id="imgWrap2">
                     <img id="bodyImg2" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a2.png" alt="Mapa relieve España sin marcas">
-                    <div class="poly-area" id="polyArea2">
-                         <!-- SVG polygons injected here -->
-                    </div>
+                    <div class="poly-area" id="polyArea2"></div>
                 </div>
             </div>
         </div>
@@ -453,7 +449,10 @@
         audioObjects[key] = a; 
     });
 
-    // Definición de elementos
+    // Definición de elementos.
+    // Importante: El orden en este array define el orden de dibujado (z-index).
+    // Submeseta Sur se define antes para que quede debajo.
+    // Montes de Toledo se define después para que quede encima.
     const relieveElements = [
         { 
             id: 'submeseta_norte', 
@@ -461,10 +460,10 @@
             points: "635,345 639,317 591,311 534,278 539,228 564,191 554,185 341,194 326,300 218,327 228,423 320,407 429,393 551,332"
         },
         { 
+            // Definida ANTES que Montes de Toledo -> Capa INFERIOR
             id: 'submeseta_sur', 
             word: 'Submeseta Sur', 
-            points: "673,630 573,653 441,666 391,695 319,702 196,736 216,532 397,524 579,456 599,467 684,555 706,595 691,625",
-            exclude: "546,538 476,544 436,528 365,567 349,591 366,612 402,614 478,629 531,609 577,582"
+            points: "673,630 573,653 441,666 391,695 319,702 196,736 216,532 397,524 579,456 599,467 684,555 706,595 691,625"
         },
         { 
             id: 'sistema_central', 
@@ -472,6 +471,7 @@
             points: "623,375 578,435 407,504 249,519 204,503 262,430 412,419 496,386 536,355 571,349"
         },
         { 
+            // Definida DESPUÉS que Submeseta Sur -> Capa SUPERIOR
             id: 'montes_toledo', 
             word: 'Montes de Toledo', 
             points: "546,538 476,544 436,528 365,567 349,591 366,612 402,614 478,629 531,609 577,582"
@@ -640,16 +640,14 @@
         svg.setAttribute("viewBox", `0 0 ${ORIGINAL_W} ${ORIGINAL_H}`);
         svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
         
+        // Renderizar en el orden del array.
+        // Los elementos anteriores quedan en capas inferiores.
+        // Los elementos posteriores quedan en capas superiores.
         relieveElements.forEach((elem, idx) => {
             const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
             poly.setAttribute("points", elem.points);
             poly.setAttribute("data-idx", idx);
             
-            if (elem.exclude) {
-                poly.setAttribute("points", elem.points + " " + elem.exclude);
-                poly.style.fillRule = "evenodd";
-            }
-
             poly.addEventListener('click', function(e) {
                 onPolygonClick.call(this, e);
             });
@@ -685,7 +683,6 @@
         const displayEl = el(displayId);
         if(displayEl) displayEl.textContent = elem.word;
         
-        // Lectura automática con delay
         speakText(elem.word, 500); 
     }
 
@@ -699,7 +696,6 @@
         
         if(answered.has(currentIdx)) return;
 
-        // Cancelar audio pendiente al hacer clic
         if (pendingSpeechTimeout) { clearTimeout(pendingSpeechTimeout); pendingSpeechTimeout = null; }
         window.speechSynthesis.cancel();
 
@@ -764,7 +760,7 @@
         const currentIdx = playOrder[playIndex];
         if (currentGame !== 1 || currentIdx === undefined) return;
         const currentWord = relieveElements[currentIdx].word;
-        speakText(currentWord, 0); // Delay 0 para respuesta inmediata
+        speakText(currentWord, 0);
     });
 
     el('playWordBtn2').addEventListener('click', (e) => {
