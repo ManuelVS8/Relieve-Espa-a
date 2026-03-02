@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="google" content="notranslate">
+    <title>El Relieve de España</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/icono.ico">
+    <style>
+        /* ====== Reset & base ====== */
+        * { box-sizing: border-box; margin:0; padding:0; }
+        :root{
+            --blue:#001DFF;
+            --blue-dark:#04032B;
+            --blue-700:#1a3a5f;
+            --blue-600:#254fba;
+            --orange:#f59e42;
+            --orange-700:#e67e22;
+            --bg-grad-1:#1a3a5f;
+            --bg-grad-2:#0d2340;
+            --white:#ffffff;
+            --green:#2ecc71;
+            --red:#e74c3c;
+            --panel:#E8EAFF;
+        }
+        body{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            min-height:100vh; color:#333; padding:10px;
+            display: block; 
+        }
+
+        .game-container{
+            background:var(--white); border-radius:16px; box-shadow:0 12px 24px rgba(0,0,0,.12);
+            padding:1.2rem; max-width:980px; width:100%; min-height:600px; position:relative; overflow:hidden;
+            display:flex; flex-direction:column; margin: 20px auto;
+        }
+        header{ text-align:center; margin-bottom:.8rem; margin-top:1rem; }
+        h1{ color:var(--blue-dark); font-size:clamp(2rem,5.2vw,3.1rem); font-weight:900; letter-spacing:.5px; }
+        .subtitle{ color:var(--blue-700); font-size:clamp(1rem,3.5vw,1.25rem); margin-top:.25rem; }
+        .highlight-keyword{ color:var(--orange); font-weight:800; }
+
+        .btn{ color:#fff; border:none; padding:.75rem 1.2rem; border-radius:10px; cursor:pointer; font-weight:800;
+            transition:transform .08s ease, box-shadow .2s ease, background-color .25s ease; min-width:140px; height:48px;
+            display:inline-flex; align-items:center; justify-content:center; font-size: 1rem; }
+        .btn:hover{ transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.12); }
+        .btn:active{ transform:translateY(0); }
+        .btn-primary{ background:var(--orange); }
+        .btn-primary:hover{ background:var(--orange-700); color:#fff; }
+        .btn-blue{ background:var(--blue-600); }
+        .btn-blue:hover{ filter:brightness(.9); }
+        .btn-ghost{ background:#e6f2ff; color:var(--blue-700); }
+
+        .screen{ display:none; animation:fadeIn .35s ease; flex-direction: column; flex:1;}
+        .screen.active{ display:flex; }
+        @keyframes fadeIn{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);} }
+
+        .shake {
+            animation: doShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes doShake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(8px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        .game-info{ display:flex; gap:.6rem; align-items:center; justify-content:space-between; margin:.4rem 0 1rem; flex-wrap:wrap; }
+        .timer{ font-weight:900; color:var(--blue-700); font-size:clamp(.95rem,2.3vw,1.15rem); }
+        .progress-bar{ flex:1; height:10px; background:#e6f2ff; border-radius:999px; overflow:hidden; position: relative; }
+        .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--orange) 0%, var(--orange-700) 100%); transition:width .3s ease; }
+        
+        .step-counter {
+            font-weight: 800;
+            color: var(--blue-700);
+            font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+            margin-left: 10px;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .start-content{ display:flex; flex-direction:column; justify-content:center; align-items:center; flex:1; gap:1rem; padding:1rem; }
+        .advice-box{ background:var(--panel); border-left:4px solid var(--blue-700); padding:1rem 1.2rem; border-radius:12px;
+            color:var(--blue-700); max-width:760px; text-align:center; font-size:clamp(1rem,3vw,1.15rem); }
+        .start-image{ max-width: 300px; width: 100%; margin: 1.5rem auto 0; }
+        
+        .mute-btn{ position:absolute; top:.8rem; right:4.5rem; background:var(--orange); color:#fff; border:2px solid #fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; z-index:20; }
+        .mute-btn:hover{ background:var(--orange-700); }
+
+        /* --- JUEGO --- */
+        .board{ display:grid; grid-template-columns:1fr; gap:.8rem; align-items:start; }
+        
+        .panel{ background:#f8fbff; border:2px solid #d3e2ff; border-radius:12px; padding:.7rem .9rem; display:flex; align-items:center; justify-content:space-between; gap:.8rem; }
+        
+        .word-display-container{ display:flex; align-items:center; justify-content:center; gap:0.5rem; flex:1; }
+        .word-display{ font-size:clamp(1.2rem,4.5vw,1.8rem); font-weight:900; color:var(--blue-700); text-align:center; }
+        .btn-play-word{ background:var(--blue-600); color:#fff; border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background-color .2s; }
+        .btn-play-word:hover{ background:var(--blue-700); }
+        .btn-play-word svg{ width:20px; height:20px; }
+
+        .stage{ background:#fff; border-radius:12px; border:2px solid #e6f2ff; padding:.6rem; box-shadow: inset 0 0 0 1px #f3f7ff; position: relative;}
+        .img-wrap{ position:relative; width:100%; max-width:100%; margin:0 auto; user-select: none; -webkit-user-select: none;}
+        .img-wrap img{ display:block; width:100%; height:auto; border-radius:10px; user-select:none; -webkit-user-drag:none; }
+
+        .marker{
+            position:absolute;
+            background: transparent;
+            border: none;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display:flex; align-items:center; justify-content:center;
+            pointer-events:auto;
+            z-index: 10;
+        }
+
+        .marker.flash-green {
+            animation: animFlashGreen 0.2s ease-in-out;
+        }
+        .marker.flash-red {
+            animation: animFlashRed 0.2s ease-in-out;
+        }
+
+        @keyframes animFlashGreen {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+            50% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0.7); background-color: rgba(46, 204, 113, 0.3); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); background-color: transparent; }
+        }
+
+        @keyframes animFlashRed {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+            25% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0.7); background-color: rgba(231, 76, 60, 0.3); transform: translate(-50%, -50%) scale(1.1); }
+            75% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0.7); background-color: rgba(231, 76, 60, 0.3); transform: translate(-50%, -50%) scale(0.9); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); background-color: transparent; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .overlay-click{ position:absolute; inset:0; pointer-events: none; }
+
+        .results{ display:flex; flex-direction:column; align-items:center; gap:.6rem; text-align:center; flex:1; justify-content:center;}
+        .final-title{ color:var(--blue-dark); font-weight:900; }
+        .big-score{ font-size:clamp(2.2rem,6vw,3.4rem); color:var(--blue-600); font-weight:900; }
+        .score-title{ font-size:1.0rem; color:var(--blue-700); margin-top:1rem; }
+        .final-time{ color:var(--blue-700); }
+        
+        #trophyBox { 
+            display: none; 
+            font-size: clamp(4rem, 10vw, 7rem);
+            margin: .5rem 0;
+            text-align: center;
+            align-self: center;
+            animation: bounce 1s ease infinite;
+            color: var(--orange);
+            line-height: 1; 
+        }
+        
+        @keyframes bounce { 
+            0%,100%{ transform: translateY(0) scale(1); } 
+            50%{ transform: translateY(-15px) scale(1.1); } 
+        }
+        
+        .credit{ color:var(--blue-700); margin-top:1rem; }
+        
+        #finalMsg { font-size: clamp(1.2rem, 4.2vw, 1.8rem); font-weight: 800; color: var(--blue-700); margin-top: 0.6rem; }
+        
+        .school-logo { display: block; width: 160px; max-width: 28%; height: auto; margin-top: 0.8rem; border-radius: 8px; object-fit: contain; }
+        @media (max-width: 899px) { .school-logo { width: 140px; max-width: 160px; } }
+        @media (max-width: 420px) { .school-logo { width: 110px; max-width: 40%; margin-top: 0.6rem; } }
+
+        .loading-indicator {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+        }
+        .loading-spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--orange);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { color: white; font-size: 1.2rem; text-align: center; }
+
+        /* --- ESTILOS DEL HALL OF FAME --- */
+        .hall-of-fame {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .hall-of-fame-title {
+            color: var(--blue-700);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .hall-of-fame-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .hall-of-fame-table th {
+            background: var(--blue-600);
+            color: white;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .hall-of-fame-table td {
+            padding: 0.4rem 0.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .hall-of-fame-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hall-of-fame-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .hall-of-fame-error, .hall-of-fame-loading {
+            padding: 1rem;
+            text-align: center;
+            color: var(--blue-700);
+            font-style: italic;
+        }
+
+        .hall-of-fame-error {
+            color: var(--red);
+        }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:1000; }
+        .modal-content { background:white; padding:2rem; border-radius:15px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+        .modal-input { width:100%; padding:10px; margin:10px 0; border:2px solid #ddd; border-radius:8px; font-size:1rem; }
+        
+        .confetti{ position:fixed; width:10px; height:10px; border-radius:50%; animation: confetti-fall 3s linear forwards; z-index:999; }
+        @keyframes confetti-fall{ 0%{ transform:translate(0, -20px) rotate(0); opacity:1;} 100%{ transform:translate(var(--tx), var(--ty)) rotate(360deg); opacity:0; } }
+
+        @media (min-width:900px){ .board{ grid-template-columns: 300px 1fr; align-items:start; } .panel{ order:1; } .stage{ order:2; } }
+        @media (max-width:899px){
+            header{ margin-top:1.6rem; }
+            .board{ grid-template-columns:1fr; }
+            .panel{ display:flex; flex-direction:row; align-items:center; justify-content:space-between; padding:.6rem; }
+            .word-display-container{ order:0; width:100%; margin-bottom:.6rem; }
+            .stage{ order:1; }
+        }
+        @media (max-width:420px){ .btn{ min-width:110px; padding:.6rem .9rem; height:44px; } }
+
+    </style>
+</head>
+<body translate="no">
+
+<div class="game-container" translate="no">
+    <button class="mute-btn" id="muteBtn" title="Silenciar/Activar sonido">🔊</button>
+
+    <section class="screen active" id="startScreen" translate="no">
+        <header>
+            <h1>El relieve</h1>
+            <div class="subtitle">Indica los principales elementos del relieve</div>
+        </header>
+
+        <div class="start-content">
+            <div class="advice-box">
+                <span class="advice-text">En el siguiente mapa deberás reconocer los principales elementos del relieve: <span class="highlight-keyword">sistemas montañosos</span>, <span class="highlight-keyword">meseta</span>, <span class="highlight-keyword">depresiones</span> y <span class="highlight-keyword">archipiélagos</span>.</span>
+                <strong style="display:block; margin-top:0.5rem; text-align:center;">¡Ánimo!</strong>
+            </div>
+            
+            <button class="btn btn-primary" id="playBtn">Comenzar</button>
+            
+            <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Niños aprendiendo">
+            
+            <div class="hall-of-fame" id="hallOfFame">
+              <div class="hall-of-fame-title">🏆 Mejores puntuaciones 🏆</div>
+              <table class="hall-of-fame-table">
+                  <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Nombre</th>
+                            <th>Puntos</th>
+                            <th>Tiempo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hofTableBody">
+                      </tbody>
+              </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="screen" id="gameScreen1" translate="no">
+        <header>
+            <h1>Identifica los elementos del relieve ⛰️</h1>
+        </header>
+        <div class="game-info">
+            <div class="timer" id="timerGame1">00:00.0</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFillGame1"></div></div>
+            <div class="step-counter" id="stepCounter1">0/14</div>
+        </div>
+
+        <div class="board">
+            <div class="panel">
+                <div class="word-display-container">
+                    <div class="word-display" id="wordDisplay1">...</div>
+                    <button class="btn-play-word" id="playWordBtn1" title="Reproducir audio" aria-label="Reproducir audio">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="stage">
+                <div class="img-wrap" id="imgWrap1">
+                    <img id="bodyImg1" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a1.png" alt="Mapa de relieve de España">
+                    <div class="overlay-click" id="overlayClick1" aria-hidden="true"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="screen" id="gameScreen2" translate="no">
+        <header>
+            <h1>Identifica los elementos del relieve (PRO) ⛰️</h1>
+        </header>
+        <div class="game-info">
+            <div class="timer" id="timerGame2">00:00.0</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFillGame2"></div></div>
+            <div class="step-counter" id="stepCounter2">0/14</div>
+        </div>
+
+        <div class="board">
+            <div class="panel">
+                <div class="word-display-container">
+                    <div class="word-display" id="wordDisplay2">...</div>
+                    <button class="btn-play-word" id="playWordBtn2" title="Reproducir audio" aria-label="Reproducir audio">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="stage">
+                <div class="img-wrap" id="imgWrap2">
+                    <img id="bodyImg2" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a2.png" alt="Mapa de relieve de España sin pistas">
+                    <div class="overlay-click" id="overlayClick2" aria-hidden="true"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="screen" id="finalScreen" translate="no">
+        <header>
+            <h1 class="final-title">El relieve de España</h1>
+        </header>
+        <div class="results">
+            <div id="trophyBox">🏆</div>
+            
+            <div class="score-title">Puntuación:</div>
+            <div class="big-score" id="finalScore">0</div>
+            
+            <div class="final-time">Tiempo empleado: <span id="finalTimeValue">00:00</span></div>
+            
+            <div id="finalMsg"></div>
+            
+            <div class="credit">Creado por Manuel J. Ventura</div>
+            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo Colegio">
+
+            <button class="btn btn-primary" id="restartBtn" style="margin-top:1.5rem; background:#f59e42;">Volver al menú</button>
+        </div>
+    </section>
+</div>
+
+<div class="loading-indicator" id="loadingIndicator">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Cargando...</div>
+</div>
+
+<div class="modal-overlay" id="submitModal">
+    <div class="modal-content">
+        <h2>¡Buen trabajo!</h2>
+        <p>Tiempo: <span id="modalTime"></span></p>
+        <input type="text" id="playerName" class="modal-input" placeholder="Nombre" maxlength="15">
+        <input type="text" id="playerSurname" class="modal-input" placeholder="Apellido" maxlength="15">
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+            <button class="btn btn-primary" id="submitScoreBtn">Guardar</button>
+            <button class="btn btn-ghost" id="discardScoreBtn">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- CONFIGURACIÓN CRÍTICA --- */
+    const SHEET_NAME = "Relieve";
+    const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAyHMXyc0aZafOMXQtfQ3YztUTDToN7D8jm62ESrLJwDEj_rdWfgryi7clcgW1ednZ/exec";
+    const TOTAL_ELEMENTS_PER_GAME = 14;
+
+    /* --- DATOS DEL JUEGO --- */
+    const game1Targets = [
+        { word: "Submeseta Norte", coords: "635,345,639,317,591,311,534,278,539,228,564,191,554,185,341,194,326,300,218,327,228,423,320,407,429,393,551,332" },
+        { word: "Submeseta Sur", coords: "673,630,573,653,441,666,391,695,319,702,196,736,216,532,397,524,579,456,599,467,684,555,706,595,691,625" },
+        { word: "Sistema Central", coords: "623,375,578,435,407,504,249,519,204,503,262,430,412,419,496,386,536,355,571,349" },
+        { word: "Montes de Toledo", coords: "546,538,476,544,436,528,365,567,349,591,366,612,402,614,478,629,531,609,577,582" },
+        { word: "Depresión del Guadalquivir", coords: "588,731,582,756,520,790,420,821,384,845,321,875,296,939,293,916,278,906,275,885,261,863,219,839,201,838,200,829,281,813,471,747,553,746" },
+        { word: "Sistema Bético", coords: "735,677,725,718,728,755,640,846,591,870,477,883,369,933,328,926,329,888,388,861,439,822,533,800,570,780,600,756,614,721,656,704" },
+        { word: "Sierra Morena", coords: "701,645,705,665,676,687,541,732,457,737,254,808,193,821,181,808,176,787,184,765,250,724,321,725,444,681,497,669,576,668" },
+        { word: "Depresión del Ebro", coords: "630,203,700,249,870,468,950,376,949,321,926,298,707,209" },
+        { word: "Sistema Ibérico", coords: "832,507,795,558,734,561,657,485,634,444,632,391,657,304,559,283,554,229,600,202,686,253,752,364,831,461" },
+        { word: "Pirineos", coords: "1092,315,1141,272,1141,218,1008,172,899,160,825,163,720,106,654,107,611,163,656,188,711,190,847,253,970,273" },
+        { word: "Cordillera Cantábrica", coords: "629,104,598,167,429,178,364,172,310,181,285,152,286,81,374,87,432,99,615,94" },
+        { word: "Macizo Galaico", coords: "268,83,268,136,289,173,319,203,311,297,262,307,196,312,115,288,62,247,27,147,26,124,78,110,142,55,174,57,199,80" },
+        { word: "Archipiélago Balear", coords: "965,497,919,587,940,676,1003,688,1207,648,1304,581,1310,466,1265,408,1142,431" },
+        { word: "Archipiélago Canario", coords: "1356,704,1355,978,889,977,888,702" }
+    ];
+
+    const game2Targets = [...game1Targets]; // Mismos elementos, diferente imagen
+
+    /* --- AUDIOS --- */
+    const audioUrls = {
+        correct: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Correcto.mp3',
+        error: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Error.mp3',
+        tap: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Tap.mp3',
+        victory: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Termin%C3%A9.mp3',
+        completed: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Completado.mp3'
+    };
+
+    /* --- VARIABLES DE ESTADO --- */
+    let attemptsGame1 = 0;
+    let attemptsGame2 = 0;
+    let successGame1 = 0;
+    let successGame2 = 0;
+    let currentGame = 1;
+    let playOrder = [];
+    let playIndex = 0;
+    let answered = new Set();
+    let markers = [];
+    let isMuted = false;
+    let audioContext;
+    let startTime;
+    let totalTime = 0;
+    let isHofLoading = false;
+    
+    const el = (id) => document.getElementById(id);
+
+    /* --- INICIALIZACIÓN --- */
+    window.onload = () => {
+        el('playBtn').onclick = startGame;
+        el('playWordBtn1').onclick = () => playWordAudio(game1Targets[playOrder[playIndex]].word, 0);
+        el('playWordBtn2').onclick = () => playWordAudio(game2Targets[playOrder[playIndex]].word, 0);
+        el('muteBtn').onclick = toggleSound;
+        el('restartBtn').onclick = () => { playSound('tap'); location.reload(); };
+        el('submitScoreBtn').onclick = submitScore;
+        el('discardScoreBtn').onclick = () => el('submitModal').style.display = 'none';
+        
+        loadHallOfFame();
+        
+        // Resize markers on window resize
+        window.addEventListener('resize', () => {
+            if(el('gameScreen1').classList.contains('active')) placeMarkers(game1Targets, el('bodyImg1'), el('imgWrap1'));
+            if(el('gameScreen2').classList.contains('active')) placeMarkers(game2Targets, el('bodyImg2'), el('imgWrap2'));
+        });
+    };
+
+    function toggleSound() {
+        isMuted = !isMuted;
+        el('muteBtn').textContent = isMuted ? '🔇' : '🔊';
+        playSound('tap');
+    }
+
+    function playSound(type) {
+        if (isMuted) return;
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        fetch(audioUrls[type])
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+                source.start();
+            });
+    }
+
+    async function playWordAudio(word, delay) {
+        if (isMuted) return;
+        const textToSpeech = word;
+        const utterance = new SpeechSynthesisUtterance(textToSpeech);
+        utterance.lang = 'es-ES';
+        setTimeout(() => window.speechSynthesis.speak(utterance), delay);
+    }
+
+    function startGame() {
+        playSound('tap');
+        startTime = Date.now();
+        showScreen('gameScreen1');
+        initGame(1);
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        el(screenId).classList.add('active');
+    }
+
+    function initGame(gameNum) {
+        currentGame = gameNum;
+        markers.forEach(m => m.remove());
+        markers = [];
+        answered.clear();
+        playIndex = 0;
+        
+        const targets = (gameNum === 1) ? game1Targets : game2Targets;
+        const imgId = (gameNum === 1) ? 'bodyImg1' : 'bodyImg2';
+        const imgWrapId = (gameNum === 1) ? 'imgWrap1' : 'imgWrap2';
+        
+        // Shuffle play order
+        playOrder = Array.from({length: targets.length}, (_, i) => i).sort(() => Math.random() - 0.5);
+        
+        el('progressFillGame' + gameNum).style.width = '0%';
+        el('stepCounter' + gameNum).textContent = '0/' + targets.length;
+        
+        const img = el(imgId);
+        if (img.complete) {
+            placeMarkers(targets, img, el(imgWrapId));
+        } else {
+            img.onload = () => placeMarkers(targets, img, el(imgWrapId));
+        }
+        
+        updateQuestion();
+    }
+
+    function placeMarkers(targets, imgElement, container) {
+        markers.forEach(m => m.remove());
+        markers = [];
+        
+        const rect = imgElement.getBoundingClientRect();
+        const scaleX = rect.width / 1365;
+        const scaleY = rect.height / 1024;
+        
+        targets.forEach((target, index) => {
+            const coords = target.coords.split(',').map(Number);
+            const polygonPoints = [];
+            for (let i = 0; i < coords.length; i += 2) {
+                polygonPoints.push(`${coords[i] * scaleX}px ${coords[i+1] * scaleY}px`);
+            }
+            
+            const marker = document.createElement('div');
+            marker.className = 'marker';
+            marker.style.width = '100%';
+            marker.style.height = '100%';
+            marker.style.position = 'absolute';
+            marker.style.top = '0';
+            marker.style.left = '0';
+            marker.style.cursor = 'pointer';
+            marker.style.clipPath = `polygon(${polygonPoints.join(', ')})`;
+            marker.dataset.idx = index;
+            marker.onclick = onMarkerClick;
+            
+            container.appendChild(marker);
+            markers.push(marker);
+        });
+    }
+
+    function updateQuestion() {
+        const targets = (currentGame === 1) ? game1Targets : game2Targets;
+        const currentIdx = playOrder[playIndex];
+        const word = targets[currentIdx].word;
+        el('wordDisplay' + currentGame).textContent = word;
+        playWordAudio(word, 500);
+    }
+
+    function onMarkerClick(e) {
+        const idxClicked = +this.dataset.idx;
+        const currentIdx = playOrder[playIndex];
+        
+        if (answered.has(currentIdx)) return;
+        
+        if (idxClicked === currentIdx) {
+            // Correct
+            if(currentGame === 1) successGame1++; else successGame2++;
+            this.classList.add('flash-green');
+            playSound('correct');
+            answered.add(currentIdx);
+            
+            setTimeout(() => {
+                this.classList.remove('flash-green');
+                nextQuestion();
+            }, 200);
+        } else {
+            // Incorrect
+            if(currentGame === 1) attemptsGame1++; else attemptsGame2++;
+            this.classList.add('flash-red');
+            playSound('error');
+            
+            // Shake effect
+            const stage = el('gameScreen' + currentGame).querySelector('.stage');
+            stage.classList.add('shake');
+            setTimeout(() => stage.classList.remove('shake'), 400);
+            
+            setTimeout(() => {
+                this.classList.remove('flash-red');
+            }, 200);
+        }
+    }
+
+    function nextQuestion() {
+        playIndex++;
+        const targets = (currentGame === 1) ? game1Targets : game2Targets;
+        
+        // Update progress bar
+        const progress = (playIndex / targets.length) * 100;
+        el('progressFillGame' + currentGame).style.width = progress + '%';
+        el('stepCounter' + currentGame).textContent = playIndex + '/' + targets.length;
+        
+        if (playIndex < targets.length) {
+            updateQuestion();
+        } else {
+            // Game Finished
+            if (currentGame === 1) {
+                showScreen('gameScreen2');
+                initGame(2);
+            } else {
+                finishGame();
+            }
+        }
+    }
+
+    function finishGame() {
+        totalTime = (Date.now() - startTime) / 1000;
+        const score = calculateScore();
+        
+        showScreen('finalScreen');
+        el('finalScore').textContent = score;
+        el('finalTimeValue').textContent = formatTime(totalTime);
+        
+        if (score === 100) {
+            el('trophyBox').style.display = 'block';
+            el('finalMsg').textContent = "¡Enhorabuena, puntuación máxima!";
+            playSound('victory');
+            startConfetti();
+        } else {
+            el('trophyBox').style.display = 'none';
+            el('finalMsg').textContent = "¡Buen trabajo! Sigue practicando";
+            playSound('completed');
+        }
+        
+        showSubmitModal(formatTime(totalTime), score);
+    }
+
+    function calculateScore() {
+        const totalPossible = TOTAL_ELEMENTS_PER_GAME * 2;
+        const totalCorrect = successGame1 + successGame2;
+        // La fórmula pedida es basada en intentos, pero interpretando el feedback
+        // sobre "puntuación perfecta", se entiende como precisión.
+        // ((Intentos_Juego1/N) + (Intentos_Juego2/N))/2 * 100
+        // Para mayor claridad, usamos el total de aciertos sobre el total de elementos.
+        return Math.round((totalCorrect / totalPossible) * 100);
+    }
+
+    function formatTime(sec) {
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = Math.floor(sec % 60).toString().padStart(2, '0');
+        const ms = Math.round((sec % 1) * 10);
+        return `${m}:${s}.${ms}`;
+    }
+
+    /* --- HALL OF FAME & API --- */
+    function loadHallOfFame() {
+        const tbody = el('hofTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-loading">Cargando datos...</td></tr>';
+        
+        const url = `${APP_SCRIPT_URL}?action=read&sheet=${SHEET_NAME}`;
+        
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success' && data.data) {
+                    tbody.innerHTML = '';
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">¡Sé el primero en guardar tu puntuación!</td></tr>';
+                        return;
+                    }
+                    
+                    data.data.slice(0, 10).forEach((row, index) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${row.name} ${row.surname}</td>
+                            <td>${row.score}</td>
+                            <td>${formatTime(row.time)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    throw new Error('Error en API');
+                }
+            })
+            .catch(e => {
+                tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-error">Error al cargar HOF</td></tr>';
+                console.error(e);
+            });
+    }
+
+    function showSubmitModal(timeStr, score) {
+        el('modalTime').textContent = timeStr;
+        el('submitModal').style.display = 'flex';
+        el('submitModal').dataset.score = score;
+        el('submitModal').dataset.time = totalTime; // Raw seconds
+    }
+
+    function submitScore() {
+        const name = el('playerName').value.trim();
+        const surname = el('playerSurname').value.trim();
+        const score = el('submitModal').dataset.score;
+        const time = el('submitModal').dataset.time;
+        
+        if (!name || !surname) {
+            alert("Por favor, rellena nombre y apellido");
+            return;
+        }
+        
+        const btn = el('submitScoreBtn');
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+        
+        const payload = {
+            sheet: SHEET_NAME,
+            action: "write",
+            data: { score, time, name, surname }
+        };
+        
+        fetch(APP_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            setTimeout(() => {
+                el('submitModal').style.display = 'none';
+                loadHallOfFame();
+            }, 1000);
+        })
+        .catch(e => {
+            alert("Error al guardar puntuación");
+            btn.textContent = "Guardar";
+            btn.disabled = false;
+        });
+    }
+
+    /* --- CONFETTI EFFECT --- */
+    function startConfetti() {
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            confetti.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+            confetti.style.setProperty('--ty', Math.random() * 300 + 100 + 'px');
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
+        }
+    }
+</script>
+
+</body>
+</html>
