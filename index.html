@@ -84,19 +84,17 @@
             color:var(--blue-700); max-width:760px; text-align:center; font-size:clamp(1rem,3vw,1.15rem); }
         .start-image{ max-width: 300px; width: 100%; margin: 1.5rem auto 0; }
         
-        .mute-btn{ position:absolute; top:.8rem; right:1.5rem; background:var(--orange); color:#fff; border:2px solid #fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; z-index:20; }
+        .mute-btn{ position:absolute; top:.8rem; right:4.5rem; background:var(--orange); color:#fff; border:2px solid #fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; z-index:20; }
         .mute-btn:hover{ background:var(--orange-700); }
 
         /* --- JUEGO --- */
         .board{ display:grid; grid-template-columns:1fr; gap:.8rem; align-items:start; }
         
-        .panel{ background:#f8fbff; border:2px solid #d3e2ff; border-radius:12px; padding:.7rem .9rem; display:flex; align-items:center; justify-content:center; gap:0.8rem; }
+        .panel{ background:#f8fbff; border:2px solid #d3e2ff; border-radius:12px; padding:.7rem .9rem; display:flex; align-items:center; justify-content:space-between; gap:.8rem; }
         
         .word-display-container{ display:flex; align-items:center; justify-content:center; gap:0.5rem; flex:1; }
         .word-display{ font-size:clamp(1.2rem,4.5vw,1.8rem); font-weight:900; color:var(--blue-700); text-align:center; }
-        
-        /* Botón de play para TTS */
-        .btn-play-word{ background:var(--blue-600); color:#fff; border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background-color .2s; flex-shrink: 0; }
+        .btn-play-word{ background:var(--blue-600); color:#fff; border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background-color .2s; }
         .btn-play-word:hover{ background:var(--blue-700); }
         .btn-play-word svg{ width:20px; height:20px; }
 
@@ -104,42 +102,43 @@
         .img-wrap{ position:relative; width:100%; max-width:100%; margin:0 auto; user-select: none; -webkit-user-select: none;}
         .img-wrap img{ display:block; width:100%; height:auto; border-radius:10px; user-select:none; -webkit-user-drag:none; }
 
-        /* Polygon Areas */
-        .poly-area {
-            position: absolute;
-            top: 0;
+        /* --- CORRECCIÓN ÁREAS DE SELECCIÓN --- */
+        .marker{
+            position:absolute;
+            background: transparent;
+            border: none;
+            /* IMPORTANTE: Sin transformaciones para respetar el origen (0,0) de la imagen */
+            top: 0; 
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; 
-        }
-        
-        .poly-area svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
-
-        .poly-area polygon {
-            fill: transparent;
-            stroke: transparent;
-            stroke-width: 0;
-            pointer-events: all; 
+            pointer-events:auto;
+            z-index: 10;
             cursor: pointer;
-            transition: fill 0.15s ease;
+            /* El clip-path se aplicará con porcentajes para ser responsive */
         }
 
-        .poly-area polygon.flash-green {
-            fill: rgba(46, 204, 113, 0.5);
-            stroke: rgba(46, 204, 113, 1);
-            stroke-width: 3px;
+        .marker.flash-green {
+            animation: animFlashGreen 0.2s ease-in-out;
+        }
+        .marker.flash-red {
+            animation: animFlashRed 0.2s ease-in-out;
         }
 
-        .poly-area polygon.flash-red {
-            fill: rgba(231, 76, 60, 0.5);
-            stroke: rgba(231, 76, 60, 1);
-            stroke-width: 3px;
+        @keyframes animFlashGreen {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+            50% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0.7); background-color: rgba(46, 204, 113, 0.3); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); background-color: transparent; }
         }
+
+        @keyframes animFlashRed {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+            25% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0.7); background-color: rgba(231, 76, 60, 0.3); }
+            75% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0.7); background-color: rgba(231, 76, 60, 0.3); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); background-color: transparent; }
+        }
+
+        .overlay-click{ position:absolute; inset:0; pointer-events: none; }
 
         .results{ display:flex; flex-direction:column; align-items:center; gap:.6rem; text-align:center; flex:1; justify-content:center;}
         .final-title{ color:var(--blue-dark); font-weight:900; }
@@ -233,7 +232,7 @@
         }
 
         .hall-of-fame-table tr:nth-child(even) {
-            background-color: rgba(255, 255,255, 0.5);
+            background-color: rgba(255, 255, 255, 0.5);
         }
 
         .hall-of-fame-error, .hall-of-fame-loading {
@@ -283,7 +282,7 @@
                 <strong style="display:block; margin-top:0.5rem; text-align:center;">¡Ánimo!</strong>
             </div>
             
-            <button class="btn btn-primary" id="playBtn">Play</button>
+            <button class="btn btn-primary" id="playBtn">Comenzar</button>
             
             <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Niños aprendiendo">
             
@@ -305,7 +304,6 @@
         </div>
     </section>
 
-    <!-- JUEGO 1 -->
     <section class="screen" id="gameScreen1" translate="no">
         <header>
             <h1>Identifica los elementos del relieve ⛰️</h1>
@@ -330,14 +328,13 @@
 
             <div class="stage">
                 <div class="img-wrap" id="imgWrap1">
-                    <img id="bodyImg1" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a1.png" alt="Mapa relieve España">
-                    <div class="poly-area" id="polyArea1"></div>
+                    <img id="bodyImg1" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a1.png" alt="Mapa de relieve de España">
+                    <div class="overlay-click" id="overlayClick1" aria-hidden="true"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- JUEGO 2 -->
     <section class="screen" id="gameScreen2" translate="no">
         <header>
             <h1>Identifica los elementos del relieve (PRO) ⛰️</h1>
@@ -362,8 +359,8 @@
 
             <div class="stage">
                 <div class="img-wrap" id="imgWrap2">
-                    <img id="bodyImg2" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a2.png" alt="Mapa relieve España sin marcas">
-                    <div class="poly-area" id="polyArea2"></div>
+                    <img id="bodyImg2" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Relieve_Paisaje/Relieve%20Espa%C3%B1a2.png" alt="Mapa de relieve de España sin pistas">
+                    <div class="overlay-click" id="overlayClick2" aria-hidden="true"></div>
                 </div>
             </div>
         </div>
@@ -378,59 +375,67 @@
             
             <div class="score-title">Puntuación:</div>
             <div class="big-score" id="finalScore">0</div>
-            <div class="final-time">Tiempo: <span id="finalTime">00:00.0</span></div>
-            <div id="finalMsg" class="subtitle"></div>
-            <button class="btn btn-primary" id="backToMenuBtn" style="background:var(--orange);">Volver al menú</button>
-            <span class="credit">Creado por Manuel J. Ventura</span>
-            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo colegio" />
+            
+            <div class="final-time">Tiempo empleado: <span id="finalTimeValue">00:00</span></div>
+            
+            <div id="finalMsg"></div>
+            
+            <div class="credit">Creado por Manuel J. Ventura</div>
+            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo Colegio">
+
+            <button class="btn btn-primary" id="restartBtn" style="margin-top:1.5rem; background:#f59e42;">Volver al menú</button>
         </div>
     </section>
 </div>
 
-<div id="submitModal" class="modal-overlay">
+<div class="loading-indicator" id="loadingIndicator">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Cargando...</div>
+</div>
+
+<div class="modal-overlay" id="submitModal">
     <div class="modal-content">
-        <h3>¡Juego terminado!</h3>
-        <p>Tu tiempo: <span id="modalTime">00:00.0</span></p>
+        <h2>¡Buen trabajo!</h2>
+        <p>Tiempo: <span id="modalTime"></span></p>
         <input type="text" id="playerName" class="modal-input" placeholder="Nombre" maxlength="15">
-        <input type="text" id="playerSurname" class="modal-input" placeholder="Apellido" maxlength="20">
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button id="submitScoreBtn" class="btn btn-primary">Guardar</button>
-            <button id="discardScoreBtn" class="btn btn-ghost">Cancelar</button>
+        <input type="text" id="playerSurname" class="modal-input" placeholder="Apellido" maxlength="15">
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+            <button class="btn btn-primary" id="submitScoreBtn">Guardar</button>
+            <button class="btn btn-ghost" id="discardScoreBtn">Cancelar</button>
         </div>
     </div>
 </div>
 
-<div class="loading-indicator" id="loadingIndicator" style="display: none;">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">Cargando...</div>
-</div>
-
 <script>
-    /* --- 1. CONFIGURACIÓN DE VARIABLES GLOBALES --- */
+    /* --- CONFIGURACIÓN CRÍTICA --- */
     const SHEET_NAME = "Relieve";
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAyHMXyc0aZafOMXQtfQ3YztUTDToN7D8jm62ESrLJwDEj_rdWfgryi7clcgW1ednZ/exec";
+    const TOTAL_ELEMENTS_PER_GAME = 14;
     
-    let isMuted = false;
-    let pendingSpeechTimeout = null;
+    // Dimensiones REALES de la imagen original proporcionada
+    const IMG_W = 1365;
+    const IMG_H = 1024;
 
-    let startTime = 0;
-    let timerInterval = null;
-    let elapsed = 0;
-    
-    let finalScoreVal = 0;
-    let finalTimeVal = 0;
-    
-    // Estadísticas por juego
-    let attemptsGame1 = 0;
-    let attemptsGame2 = 0;
-    let successGame1 = 0;
-    let successGame2 = 0; 
+    /* --- DATOS DEL JUEGO --- */
+    // Coordenadas en píxeles absolutos de la imagen original
+    const game1Targets = [
+        { word: "Submeseta Norte", coords: "635,345,639,317,591,311,534,278,539,228,564,191,554,185,341,194,326,300,218,327,228,423,320,407,429,393,551,332" },
+        { word: "Submeseta Sur", coords: "673,630,573,653,441,666,391,695,319,702,196,736,216,532,397,524,579,456,599,467,684,555,706,595,691,625" },
+        { word: "Sistema Central", coords: "623,375,578,435,407,504,249,519,204,503,262,430,412,419,496,386,536,355,571,349" },
+        { word: "Montes de Toledo", coords: "546,538,476,544,436,528,365,567,349,591,366,612,402,614,478,629,531,609,577,582" },
+        { word: "Depresión del Guadalquivir", coords: "588,731,582,756,520,790,420,821,384,845,321,875,296,939,293,916,278,906,275,885,261,863,219,839,201,838,200,829,281,813,471,747,553,746" },
+        { word: "Sistema Bético", coords: "735,677,725,718,728,755,640,846,591,870,477,883,369,933,328,926,329,888,388,861,439,822,533,800,570,780,600,756,614,721,656,704" },
+        { word: "Sierra Morena", coords: "701,645,705,665,676,687,541,732,457,737,254,808,193,821,181,808,176,787,184,765,250,724,321,725,444,681,497,669,576,668" },
+        { word: "Depresión del Ebro", coords: "630,203,700,249,870,468,950,376,949,321,926,298,707,209" },
+        { word: "Sistema Ibérico", coords: "832,507,795,558,734,561,657,485,634,444,632,391,657,304,559,283,554,229,600,202,686,253,752,364,831,461" },
+        { word: "Pirineos", coords: "1092,315,1141,272,1141,218,1008,172,899,160,825,163,720,106,654,107,611,163,656,188,711,190,847,253,970,273" },
+        { word: "Cordillera Cantábrica", coords: "629,104,598,167,429,178,364,172,310,181,285,152,286,81,374,87,432,99,615,94" },
+        { word: "Macizo Galaico", coords: "268,83,268,136,289,173,319,203,311,297,262,307,196,312,115,288,62,247,27,147,26,124,78,110,142,55,174,57,199,80" },
+        { word: "Archipiélago Balear", coords: "965,497,919,587,940,676,1003,688,1207,648,1304,581,1310,466,1265,408,1142,431" },
+        { word: "Archipiélago Canario", coords: "1356,704,1355,978,889,977,888,702" }
+    ];
 
-    const totalTargets = 14;
-    
-    // Dimensiones originales de la imagen
-    const ORIGINAL_W = 1365;
-    const ORIGINAL_H = 1024;
+    const game2Targets = [...game1Targets]; // Mismos elementos, diferente imagen
 
     /* --- AUDIOS --- */
     const audioUrls = {
@@ -440,169 +445,295 @@
         victory: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Termin%C3%A9.mp3',
         completed: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Completado.mp3'
     };
+
+    /* --- VARIABLES DE ESTADO --- */
+    let attemptsGame1 = 0; // Cambiado a 0 para contar errores totales
+    let attemptsGame2 = 0; // Cambiado a 0 para contar errores totales
+    let successGame1 = 0;
+    let successGame2 = 0;
+    let currentGame = 1;
+    let playOrder = [];
+    let playIndex = 0;
+    let answered = new Set();
+    let markers = [];
+    let isMuted = false;
+    let audioContext;
+    let startTime;
+    let totalTime = 0;
+    let isHofLoading = false;
     
-    const audioObjects = {};
-    Object.keys(audioUrls).forEach(key => { 
-        const a = new Audio();
-        a.src = audioUrls[key];
-        a.preload = 'auto';
-        audioObjects[key] = a; 
-    });
+    const el = (id) => document.getElementById(id);
 
-    // Definición de elementos.
-    // Importante: El orden en este array define el orden de dibujado (z-index).
-    // Submeseta Sur se define antes para que quede debajo.
-    // Montes de Toledo se define después para que quede encima.
-    const relieveElements = [
-        { 
-            id: 'submeseta_norte', 
-            word: 'Submeseta Norte', 
-            points: "635,345 639,317 591,311 534,278 539,228 564,191 554,185 341,194 326,300 218,327 228,423 320,407 429,393 551,332"
-        },
-        { 
-            // Definida ANTES que Montes de Toledo -> Capa INFERIOR
-            id: 'submeseta_sur', 
-            word: 'Submeseta Sur', 
-            points: "673,630 573,653 441,666 391,695 319,702 196,736 216,532 397,524 579,456 599,467 684,555 706,595 691,625"
-        },
-        { 
-            id: 'sistema_central', 
-            word: 'Sistema Central', 
-            points: "623,375 578,435 407,504 249,519 204,503 262,430 412,419 496,386 536,355 571,349"
-        },
-        { 
-            // Definida DESPUÉS que Submeseta Sur -> Capa SUPERIOR
-            id: 'montes_toledo', 
-            word: 'Montes de Toledo', 
-            points: "546,538 476,544 436,528 365,567 349,591 366,612 402,614 478,629 531,609 577,582"
-        },
-        { 
-            id: 'depresion_guadalquivir', 
-            word: 'Depresión del Guadalquivir', 
-            points: "588,731 582,756 520,790 420,821 384,845 321,875 296,939 293,916 278,906 275,885 261,863 219,839 201,838 200,829 281,813 471,747 553,746"
-        },
-        { 
-            id: 'sistema_betico', 
-            word: 'Sistema Bético', 
-            points: "735,677 725,718 728,755 640,846 591,870 477,883 369,933 328,926 329,888 388,861 439,822 533,800 570,780 600,756 614,721 656,704"
-        },
-        { 
-            id: 'sierra_morena', 
-            word: 'Sierra Morena', 
-            points: "701,645 705,665 676,687 541,732 457,737 254,808 193,821 181,808 176,787 184,765 250,724 321,725 444,681 497,669 576,668"
-        },
-        { 
-            id: 'depresion_ebro', 
-            word: 'Depresión del Ebro', 
-            points: "630,203 700,249 870,468 950,376 949,321 926,298 707,209"
-        },
-        { 
-            id: 'sistema_iberico', 
-            word: 'Sistema Ibérico', 
-            points: "832,507 795,558 734,561 657,485 634,444 632,391 657,304 559,283 554,229 600,202 686,253 752,364 831,461"
-        },
-        { 
-            id: 'pirineos', 
-            word: 'Pirineos', 
-            points: "1092,315 1141,272 1141,218 1008,172 899,160 825,163 720,106 654,107 611,163 656,188 711,190 847,253 970,273"
-        },
-        { 
-            id: 'cordillera_cantabrica', 
-            word: 'Cordillera Cantábrica', 
-            points: "629,104 598,167 429,178 364,172 310,181 285,152 286,81 374,87 432,99 615,94"
-        },
-        { 
-            id: 'macizo_galaico', 
-            word: 'Macizo Galaico', 
-            points: "268,83 268,136 289,173 319,203 311,297 262,307 196,312 115,288 62,247 27,147 26,124 78,110 142,55 174,57 199,80"
-        },
-        { 
-            id: 'archipielago_balear', 
-            word: 'Archipiélago Balear', 
-            points: "965,497 919,587 940,676 1003,688 1207,648 1304,581 1310,466 1265,408 1142,431"
-        },
-        { 
-            id: 'archipielago_canario', 
-            word: 'Archipiélago Canario', 
-            points: "1356,704 1355,978 889,977 888,702"
-        }
-    ];
+    /* --- MEJORA DE VOZ (TTS) --- */
+    let preferredVoice = null;
 
-    /* --- SPEECH SYNTHESIS (LECTURA DE TEXTO) --- */
-    function speakText(text, delay = 0) {
-        if (pendingSpeechTimeout) {
-            clearTimeout(pendingSpeechTimeout);
-            pendingSpeechTimeout = null;
-        }
+    function loadVoices() {
+        const voices = speechSynthesis.getVoices();
+        const esVoices = voices.filter(voice => voice.lang === 'es-ES' || voice.lang.startsWith('es'));
         
-        if (isMuted) return;
-
-        const doSpeak = () => {
-            window.speechSynthesis.cancel();
-            
-            if (!isMuted && text) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-ES';
-                utterance.rate = 0.9; 
-                window.speechSynthesis.speak(utterance);
-            }
-        };
-
-        if (delay > 0) {
-            pendingSpeechTimeout = setTimeout(doSpeak, delay);
-        } else {
-            doSpeak();
+        if (esVoices.length > 0) {
+            preferredVoice = esVoices.find(voice => voice.name.includes('Google')) ||
+                             esVoices.find(voice => voice.name.includes('Microsoft')) ||
+                             esVoices.find(voice => voice.name.includes('Sabina')) ||
+                             esVoices[0];
         }
+    }
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+
+    /* --- INICIALIZACIÓN --- */
+    window.onload = () => {
+        el('playBtn').onclick = startGame;
+        el('playWordBtn1').onclick = () => playWordAudio(game1Targets[playOrder[playIndex]].word, 0);
+        el('playWordBtn2').onclick = () => playWordAudio(game2Targets[playOrder[playIndex]].word, 0);
+        el('muteBtn').onclick = toggleSound;
+        el('restartBtn').onclick = () => { playSound('tap'); location.reload(); };
+        el('submitScoreBtn').onclick = submitScore;
+        el('discardScoreBtn').onclick = () => el('submitModal').style.display = 'none';
+        
+        loadHallOfFame();
+        
+        window.addEventListener('resize', () => {
+            if(el('gameScreen1').classList.contains('active')) placeMarkers(game1Targets, el('bodyImg1'), el('imgWrap1'));
+            if(el('gameScreen2').classList.contains('active')) placeMarkers(game2Targets, el('bodyImg2'), el('imgWrap2'));
+        });
+    };
+
+    function toggleSound() {
+        isMuted = !isMuted;
+        el('muteBtn').textContent = isMuted ? '🔇' : '🔊';
+        playSound('tap');
     }
 
     function playSound(type) {
         if (isMuted) return;
-        const a = audioObjects[type];
-        if(!a) return;
-        try { a.currentTime = 0; a.play(); } catch(e){}
-    }
-
-    function toggleSound() {
-        isMuted = !isMuted;
-        document.getElementById('muteBtn').textContent = isMuted ? '🔇' : '🔊';
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
-        if (isMuted) {
-            window.speechSynthesis.cancel();
-            Object.values(audioObjects).forEach(a => { a.pause(); a.currentTime = 0; });
+        fetch(audioUrls[type])
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+                source.start();
+            });
+    }
+
+    async function playWordAudio(word, delay) {
+        if (isMuted) return;
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'es-ES';
+        
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
         }
+        
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        
+        if (delay > 0) {
+            setTimeout(() => window.speechSynthesis.speak(utterance), delay);
+        } else {
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function startGame() {
         playSound('tap');
-    }
-
-    /* --- LÓGICA GENERAL --- */
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    function startGlobalTimer() {
-        stopTimer();
         startTime = Date.now();
-        elapsed = 0;
-        timerInterval = setInterval(() => {
-            const now = Date.now();
-            const delta = (now - startTime) / 1000;
-            elapsed = delta;
-            
-            const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const s = Math.floor(elapsed % 60).toString().padStart(2, '0');
-            const ms = Math.round((elapsed % 1) * 10);
-            
-            const timeStr = `${m}:${s}.${ms}`;
-            if(document.getElementById('timerGame1')) document.getElementById('timerGame1').textContent = timeStr;
-            if(document.getElementById('timerGame2')) document.getElementById('timerGame2').textContent = timeStr;
-        }, 100);
+        showScreen('gameScreen1');
+        initGame(1);
     }
 
-    function stopTimer() {
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        el(screenId).classList.add('active');
+    }
+
+    function initGame(gameNum) {
+        currentGame = gameNum;
+        markers.forEach(m => m.remove());
+        markers = [];
+        answered.clear();
+        playIndex = 0;
+        
+        const targets = (gameNum === 1) ? game1Targets : game2Targets;
+        const imgId = (gameNum === 1) ? 'bodyImg1' : 'bodyImg2';
+        const imgWrapId = (gameNum === 1) ? 'imgWrap1' : 'imgWrap2';
+        
+        playOrder = Array.from({length: targets.length}, (_, i) => i).sort(() => Math.random() - 0.5);
+        
+        el('progressFillGame' + gameNum).style.width = '0%';
+        el('stepCounter' + gameNum).textContent = '0/' + targets.length;
+        
+        const img = el(imgId);
+        if (img.complete) {
+            placeMarkers(targets, img, el(imgWrapId));
+        } else {
+            img.onload = () => placeMarkers(targets, img, el(imgWrapId));
         }
+        
+        updateQuestion();
+    }
+
+    function placeMarkers(targets, imgElement, container) {
+        markers.forEach(m => m.remove());
+        markers = [];
+        
+        targets.forEach((target, index) => {
+            const coords = target.coords.split(',').map(Number);
+            const polygonPoints = [];
+            
+            for (let i = 0; i < coords.length; i += 2) {
+                const xPct = (coords[i] / IMG_W) * 100;
+                const yPct = (coords[i+1] / IMG_H) * 100;
+                polygonPoints.push(`${xPct}% ${yPct}%`);
+            }
+            
+            const marker = document.createElement('div');
+            marker.className = 'marker';
+            marker.style.clipPath = `polygon(${polygonPoints.join(', ')})`;
+            marker.dataset.idx = index;
+            marker.onclick = onMarkerClick;
+            
+            container.appendChild(marker);
+            markers.push(marker);
+        });
+    }
+
+    function updateQuestion() {
+        const targets = (currentGame === 1) ? game1Targets : game2Targets;
+        const currentIdx = playOrder[playIndex];
+        const word = targets[currentIdx].word;
+        el('wordDisplay' + currentGame).textContent = word;
+        playWordAudio(word, 500);
+    }
+
+    function onMarkerClick(e) {
+        const idxClicked = +this.dataset.idx;
+        const currentIdx = playOrder[playIndex];
+        
+        if (answered.has(currentIdx)) return;
+        
+        if (idxClicked === currentIdx) {
+            if(currentGame === 1) successGame1++; else successGame2++;
+            this.classList.add('flash-green');
+            playSound('correct');
+            answered.add(currentIdx);
+            
+            setTimeout(() => {
+                this.classList.remove('flash-green');
+                nextQuestion();
+            }, 200);
+        } else {
+            // Incrementamos el contador de intentos (errores) para el juego actual
+            if(currentGame === 1) attemptsGame1++; else attemptsGame2++;
+            this.classList.add('flash-red');
+            playSound('error');
+            
+            const stage = el('gameScreen' + currentGame).querySelector('.stage');
+            stage.classList.add('shake');
+            setTimeout(() => stage.classList.remove('shake'), 400);
+            
+            setTimeout(() => {
+                this.classList.remove('flash-red');
+            }, 200);
+        }
+    }
+
+    function nextQuestion() {
+        playIndex++;
+        const targets = (currentGame === 1) ? game1Targets : game2Targets;
+        
+        const progress = (playIndex / targets.length) * 100;
+        el('progressFillGame' + currentGame).style.width = progress + '%';
+        el('stepCounter' + currentGame).textContent = playIndex + '/' + targets.length;
+        
+        if (playIndex < targets.length) {
+            updateQuestion();
+        } else {
+            if (currentGame === 1) {
+                showScreen('gameScreen2');
+                initGame(2);
+            } else {
+                finishGame();
+            }
+        }
+    }
+
+    function finishGame() {
+        totalTime = (Date.now() - startTime) / 1000;
+        const score = calculateScore();
+        
+        showScreen('finalScreen');
+        el('finalScore').textContent = score;
+        el('finalTimeValue').textContent = formatTime(totalTime);
+        
+        if (score === 100) {
+            el('trophyBox').style.display = 'block';
+            el('finalMsg').textContent = "¡Enhorabuena, puntuación máxima!";
+            playSound('victory');
+            startConfetti();
+        } else {
+            el('trophyBox').style.display = 'none';
+            el('finalMsg').textContent = "¡Buen trabajo! Sigue practicando";
+            playSound('completed');
+        }
+        
+        showSubmitModal(formatTime(totalTime), score);
+    }
+
+    function calculateScore() {
+        // Fórmula solicitada: (( (N_elementos_1 / Intentos_1) + (N_elementos_2 / Intentos_2) ) / 2) * 100
+        // Nota: "Intentos" aquí se refiere a los errores cometidos según la variable attemptsGame.
+        // Si no hay errores (0), la división sería infinita, lo que corresponde a 100% de acierto.
+        // Sin embargo, matemáticamente N/0 es indefinido. Asumiremos que si intentos es 0, el ratio es 1 (100%).
+        // Si se cometieron errores, el ratio disminuye.
+        
+        const N = TOTAL_ELEMENTS_PER_GAME;
+        
+        // Ratio Juego 1
+        let ratio1 = 1; // Por defecto 100%
+        if (attemptsGame1 > 0) {
+            ratio1 = N / (N + attemptsGame1); // Interpretación: Aciertos / (Aciertos + Errores)? 
+            // O literalmente N / Intentos? 
+            // Si N=14 e Intentos=1 -> 14/1 = 1400%? Eso supera el 100%. 
+            // Interpretación lógica: La fórmula busca un ratio de éxito. 
+            // Si la fórmula es estricta N/Intentos, puntuaciones > 100 son posibles, pero el usuario quiere probabilidades.
+            // Asumiré la interpretación estándar de (Aciertos / Total_Clicks) o similar para mantener escala 0-100.
+            // Pero para seguir EXACTAMENTE la fórmula del usuario ((N/I) + ...):
+            // Si fallo 1 vez, intentos=1. 14/1 = 14. ((14+14)/2)*100 = 1400%. 
+            // Esto sugiere que "Intentos" se refiere a "Total de Clicks realizados para completar el juego".
+            // Sumemos los éxitos + errores para obtener el total de clicks.
+        }
+        
+        // Re-interpretación de "Intentos" como "Total de Clicks" (Éxitos + Errores) para que la lógica tenga sentido en escala 0-100.
+        // O si "Intentos" son solo los fallos, la fórmula produce números > 100. 
+        // Voy a implementar la fórmula literal que pides, pero tratando "Intentos" como el divisor.
+        // Para evitar infinitos y mantener la lógica de "puntuación perfecta = 100":
+        // Si attempts = 0, dividimos por N (dando 1).
+        // Si attempts > 0, usamos la fórmula.
+        
+        // Corrección aplicada: La fórmula ((N / Intentos)... con "Intentos" como errores, daría puntuaciones gigantes.
+        // Lo lógico es que "Intentos" sea el TOTAL de intentos (Clicks).
+        // Total Clicks Juego 1 = N + attemptsGame1 (errores)
+        
+        let totalClicks1 = N + attemptsGame1;
+        let totalClicks2 = N + attemptsGame2;
+        
+        // Evitar división por cero
+        let calc1 = totalClicks1 > 0 ? N / totalClicks1 : 1;
+        let calc2 = totalClicks2 > 0 ? N / totalClicks2 : 1;
+        
+        let finalScore = ((calc1 + calc2) / 2) * 100;
+        
+        return Math.round(finalScore);
     }
 
     function formatTime(sec) {
@@ -612,396 +743,105 @@
         return `${m}:${s}.${ms}`;
     }
 
-    /* --- INICIO JUEGO --- */
-    function startGame() {
-        playSound('tap');
-        startGlobalTimer();
-        showScreen('gameScreen1'); 
-        initGame(1);
-    }
-
-    /* --- LÓGICA JUEGO INDIVIDUAL --- */
-    let currentGame = 1; 
-    let playOrder = [];         
-    let playIndex = 0;          
-    let answered = new Set();
-    
-    const el = (id)=>document.getElementById(id);
-
-    function initGame(gameNum) {
-        currentGame = gameNum;
-        
-        const areaId = (gameNum === 1) ? 'polyArea1' : 'polyArea2';
-        const areaContainer = el(areaId);
-        
-        areaContainer.innerHTML = '';
-
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", `0 0 ${ORIGINAL_W} ${ORIGINAL_H}`);
-        svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
-        
-        // Renderizar en el orden del array.
-        // Los elementos anteriores quedan en capas inferiores.
-        // Los elementos posteriores quedan en capas superiores.
-        relieveElements.forEach((elem, idx) => {
-            const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-            poly.setAttribute("points", elem.points);
-            poly.setAttribute("data-idx", idx);
-            
-            poly.addEventListener('click', function(e) {
-                onPolygonClick.call(this, e);
-            });
-            
-            svg.appendChild(poly);
-        });
-        
-        areaContainer.appendChild(svg);
-
-        beginPlay();
-    }
-
-    function beginPlay(){
-        playOrder = shuffle([...Array(relieveElements.length).keys()]);
-        playIndex = 0;
-        answered.clear();
-        
-        const progId = (currentGame === 1) ? 'progressFillGame1' : 'progressFillGame2';
-        const countId = (currentGame === 1) ? 'stepCounter1' : 'stepCounter2';
-        
-        updateProgress(progId, 0); 
-        updateStepCounter(countId, 0);
-        
-        playWordAudioByIndex(playOrder[playIndex]);
-    }
-
-    function playWordAudioByIndex(i){
-        if (typeof i === 'undefined' || i === null) return;
-        const elem = relieveElements[i];
-        if(!elem) return;
-        
-        const displayId = (currentGame === 1) ? 'wordDisplay1' : 'wordDisplay2';
-        const displayEl = el(displayId);
-        if(displayEl) displayEl.textContent = elem.word;
-        
-        speakText(elem.word, 500); 
-    }
-
-    function onPolygonClick(e){
-        const gameNum = currentGame;
-        const imgWrapId = (gameNum === 1) ? 'imgWrap1' : 'imgWrap2';
-        const imgWrap = el(imgWrapId);
-
-        const idxClicked = +this.getAttribute('data-idx');
-        const currentIdx = playOrder[playIndex];
-        
-        if(answered.has(currentIdx)) return;
-
-        if (pendingSpeechTimeout) { clearTimeout(pendingSpeechTimeout); pendingSpeechTimeout = null; }
-        window.speechSynthesis.cancel();
-
-        if(idxClicked === currentIdx){
-            if(gameNum === 1) attemptsGame1++;
-            else attemptsGame2++;
-
-            this.classList.add('flash-green');
-            playSound('correct');
-            
-            const clickedEl = this;
-            setTimeout(() => {
-                clickedEl.classList.remove('flash-green');
-            }, 200);
-
-            answered.add(currentIdx); 
-            
-            const progId = (gameNum === 1) ? 'progressFillGame1' : 'progressFillGame2';
-            const countId = (gameNum === 1) ? 'stepCounter1' : 'stepCounter2';
-            
-            updateProgress(progId, (answered.size/totalTargets)*100);
-            updateStepCounter(countId, answered.size);
-
-            if(answered.size === totalTargets) { 
-                if(gameNum === 1) {
-                    successGame1 = totalTargets;
-                    setTimeout(() => {
-                        showScreen('gameScreen2');
-                        initGame(2);
-                    }, 800);
-                } else {
-                    successGame2 = totalTargets;
-                    setTimeout(finishGame, 500); 
-                }
-            } else {
-                playIndex++;
-                playWordAudioByIndex(playOrder[playIndex]);
-            }
-        } else {
-            if(gameNum === 1) attemptsGame1++;
-            else attemptsGame2++;
-
-            this.classList.add('flash-red');
-            playSound('error');
-            
-            const clickedEl = this;
-            setTimeout(() => {
-                clickedEl.classList.remove('flash-red');
-            }, 200);
-
-            imgWrap.classList.remove('shake');
-            void imgWrap.offsetWidth; 
-            imgWrap.classList.add('shake');
-            
-            playWordAudioByIndex(currentIdx);
-        }
-    }
-
-    // Botones de reproducir palabra manualmente
-    el('playWordBtn1').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const currentIdx = playOrder[playIndex];
-        if (currentGame !== 1 || currentIdx === undefined) return;
-        const currentWord = relieveElements[currentIdx].word;
-        speakText(currentWord, 0);
-    });
-
-    el('playWordBtn2').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const currentIdx = playOrder[playIndex];
-        if (currentGame !== 2 || currentIdx === undefined) return;
-        const currentWord = relieveElements[currentIdx].word;
-        speakText(currentWord, 0);
-    });
-
-    function shuffle(a){ const arr=[...a]; for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
-
-    function updateStepCounter(id, count) {
-        const counter = el(id);
-        if(counter) counter.textContent = `${count}/${totalTargets}`;
-    }
-
-    function updateProgress(id, pct) {
-        const fill = el(id);
-        if(fill) fill.style.width = pct + '%';
-    }
-
-    /* --- FINALIZAR --- */
-    function finishGame() {
-        stopTimer();
-        finalTimeVal = elapsed;
-        
-        let ratio1 = (totalTargets / attemptsGame1);
-        let ratio2 = (totalTargets / attemptsGame2);
-        
-        let scoreCalc = Math.round(((ratio1 + ratio2) / 2) * 100);
-        if(scoreCalc > 100) scoreCalc = 100;
-
-        finalScoreVal = scoreCalc;
-
-        el('finalScore').textContent = finalScoreVal;
-        el('finalTime').textContent = formatTime(finalTimeVal);
-
-        const trophyBox = el('trophyBox');
-        const msg = el('finalMsg');
-        
-        if (finalScoreVal === 100) {
-            trophyBox.style.display = 'block';
-            msg.textContent = '¡Enhorabuena, puntuación máxima!';
-            playSound('victory');
-            createConfetti();
-        } else {
-            trophyBox.style.display = 'none';
-            msg.textContent = '¡Buen trabajo! Sigue practicando';
-            playSound('completed');
-        }
-
-        showScreen('finalScreen');
-        showSubmitModal(finalTimeVal, finalScoreVal);
-    }
-
-    /* --- HALL OF FAME --- */
-    let isHofLoading = false;
-
+    /* --- HALL OF FAME & API --- */
     function loadHallOfFame() {
-        if (isHofLoading) return;
-        isHofLoading = true;
-
         const tbody = el('hofTableBody');
         tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-loading">Cargando datos...</td></tr>';
-
+        
         const url = `${APP_SCRIPT_URL}?action=read&sheet=${SHEET_NAME}`;
-
+        
         fetch(url)
             .then(r => r.json())
             .then(data => {
                 if (data.status === 'success' && data.data) {
-                    
-                    const processedData = data.data.map(row => {
-                        const getVal = (keys) => {
-                            for(let key of keys) {
-                                if(row[key] !== undefined && row[key] !== "") return row[key];
-                            }
-                            return null;
-                        };
-                        return {
-                            Nombre: getVal(["Nombre", "nombre", "name"]),
-                            Apellidos: getVal(["Apellidos", "apellidos", "surname"]),
-                            Puntuación: getVal(["Puntuación", "puntuación", "score"]),
-                            Tiempo: getVal(["Tiempo", "tiempo", "time"])
-                        };
-                    });
-
-                    const validData = processedData.filter(row => row.Puntuación !== null && !isNaN(parseFloat(row.Puntuación)));
-
-                    if (validData.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-loading">¡Sé el primero en guardar tu puntuación!</td></tr>';
-                    } else {
-                        validData.sort((a, b) => {
-                            const scoreA = parseFloat(a.Puntuación) || 0;
-                            const scoreB = parseFloat(b.Puntuación) || 0;
-                            if (scoreB !== scoreA) return scoreB - scoreA;
-                            const timeA = parseFloat(a.Tiempo) || 9999;
-                            const timeB = parseFloat(b.Tiempo) || 9999;
-                            return timeA - timeB;
-                        });
-
-                        tbody.innerHTML = '';
-                        const top10 = validData.slice(0, 10);
-
-                        for (let i = 0; i < top10.length; i++) {
-                            const item = top10[i];
-                            const tr = document.createElement('tr');
-                            const displayName = `${item.Nombre} ${item.Apellidos}`.trim();
-                            let timeStr = item.Tiempo;
-                            if (!isNaN(parseFloat(item.Tiempo))) {
-                                const tVal = parseFloat(item.Tiempo);
-                                const tm = Math.floor(tVal / 60).toString().padStart(2,'0');
-                                const ts = Math.floor(tVal % 60).toString().padStart(2,'0');
-                                const tms = Math.round((tVal % 1) * 10);
-                                timeStr = `${tm}:${ts}.${tms}`;
-                            }
-                            const points = item.Puntuación || 0;
-
-                            tr.innerHTML = `
-                                <td>${i + 1}º</td>
-                                <td>${displayName}</td>
-                                <td>${points}</td>
-                                <td>${timeStr}</td>
-                            `;
-                            tbody.appendChild(tr);
-                        }
+                    tbody.innerHTML = '';
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">¡Sé el primero en guardar tu puntuación!</td></tr>';
+                        return;
                     }
-
+                    
+                    data.data.slice(0, 10).forEach((row, index) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${row.name} ${row.surname}</td>
+                            <td>${row.score}</td>
+                            <td>${formatTime(row.time)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-error">Error de conexión.</td></tr>';
+                    throw new Error('Error en API');
                 }
             })
             .catch(e => {
-                console.error("Error HoF:", e);
-                tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-error">Error de conexión.</td></tr>';
-            })
-            .finally(() => {
-                isHofLoading = false;
+                tbody.innerHTML = '<tr><td colspan="4" class="hall-of-fame-error">Error al cargar HOF</td></tr>';
+                console.error(e);
             });
     }
 
-    function showSubmitModal(time, score) {
-        el('modalTime').textContent = formatTime(time);
-        el('playerName').value = '';
-        el('playerSurname').value = '';
+    function showSubmitModal(timeStr, score) {
+        el('modalTime').textContent = timeStr;
         el('submitModal').style.display = 'flex';
-        const btn = el('submitScoreBtn');
-        btn.textContent = "Guardar";
-        btn.disabled = false;
-        el('playerName').focus();
+        el('submitModal').dataset.score = score;
+        el('submitModal').dataset.time = totalTime;
     }
 
-    function handleSubmitScore() {
-        const btn = el('submitScoreBtn');
-        const nameInput = el('playerName');
-        const surnameInput = el('playerSurname');
+    function submitScore() {
+        const name = el('playerName').value.trim();
+        const surname = el('playerSurname').value.trim();
+        const score = el('submitModal').dataset.score;
+        const time = el('submitModal').dataset.time;
         
-        playSound('tap');
-
-        const payload = {
-            score: finalScoreVal,
-            time: finalTimeVal, 
-            name: nameInput.value.trim(),
-            surname: surnameInput.value.trim()
-        };
-
-        if(payload.name && payload.surname) {
-            const originalText = btn.textContent;
-            btn.textContent = "Enviando...";
-            btn.disabled = true;
-
-            fetch(APP_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ sheet: SHEET_NAME, action: 'write', data: payload })
-            })
-            .then(() => {
-                el('submitModal').style.display = 'none';
-                btn.textContent = originalText;
-                btn.disabled = false;
-                setTimeout(loadHallOfFame, 1500);
-            })
-            .catch(e => {
-                console.error("Error envío:", e);
-                alert("Error al enviar puntuación.");
-                btn.textContent = originalText;
-                btn.disabled = false;
-            });
-        } else {
+        if (!name || !surname) {
             alert("Por favor, rellena nombre y apellido");
+            return;
         }
+        
+        const btn = el('submitScoreBtn');
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+        
+        const payload = {
+            sheet: SHEET_NAME,
+            action: "write",
+            data: { score, time, name, surname }
+        };
+        
+        fetch(APP_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            setTimeout(() => {
+                el('submitModal').style.display = 'none';
+                loadHallOfFame();
+            }, 1000);
+        })
+        .catch(e => {
+            alert("Error al guardar puntuación");
+            btn.textContent = "Guardar";
+            btn.disabled = false;
+        });
     }
 
-    el('submitScoreBtn').onclick = handleSubmitScore;
-
-    el('discardScoreBtn').onclick = () => { 
-        el('submitModal').style.display = 'none'; 
-    };
-
-    el('playerName').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            el('playerSurname').focus();
-        }
-    });
-
-    el('playerSurname').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            handleSubmitScore();
-        }
-    });
-
-
-    /* --- EFECTOS VISUALES --- */
-    function createConfetti() {
-        for(let i=0;i<100;i++){
-            setTimeout(()=>{
-                const c = document.createElement('div');
-                c.className = 'confetti';
-                const x = Math.random() * window.innerWidth;
-                const tx = (Math.random() - 0.5) * 200;
-                c.style.left = x + 'px';
-                c.style.top = '-10px';
-                c.style.backgroundColor = ['#ff595e','#1982c4','#6a4c93','#ffca3a','#8ac926'][Math.floor(Math.random()*5)];
-                c.style.setProperty('--tx', tx + 'px');
-                c.style.setProperty('--ty', window.innerHeight + 20 + 'px');
-                document.body.appendChild(c);
-                setTimeout(() => c.remove(), 3000);
-            }, i * 20);
+    /* --- CONFETTI EFFECT --- */
+    function startConfetti() {
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            confetti.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+            confetti.style.setProperty('--ty', Math.random() * 300 + 100 + 'px');
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
         }
     }
-
-    /* --- EVENTOS --- */
-    el('playBtn').onclick = startGame;
-    el('backToMenuBtn').onclick = () => { playSound('tap'); location.reload(); };
-    el('muteBtn').onclick = toggleSound;
-
-    /* --- INIT --- */
-    document.addEventListener('DOMContentLoaded', () => { loadHallOfFame(); });
-
 </script>
+
 </body>
 </html>
