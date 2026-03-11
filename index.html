@@ -105,7 +105,7 @@
         .marker{
             position:absolute;
             background: transparent;
-            border: none;
+            border: none; 
             top: 0; 
             left: 0;
             width: 100%;
@@ -247,7 +247,6 @@
         .modal-content { background:white; padding:2rem; border-radius:15px; width:90%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
         .modal-input { width:100%; padding:10px; margin:10px 0; border:2px solid #ddd; border-radius:8px; font-size:1rem; }
         
-        /* --- CONFETTI (COPIADO DEL MODELO) --- */
         .confetti{ position:fixed; width:10px; height:10px; border-radius:50%; animation: confetti-fall 3s linear forwards; z-index:999; }
         @keyframes confetti-fall{ 0%{ transform:translate(0, -20px) rotate(0); opacity:1;} 100%{ transform:translate(var(--tx), var(--ty)) rotate(360deg); opacity:0; } }
 
@@ -410,12 +409,11 @@
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAyHMXyc0aZafOMXQtfQ3YztUTDToN7D8jm62ESrLJwDEj_rdWfgryi7clcgW1ednZ/exec";
     const TOTAL_ELEMENTS_PER_GAME = 14;
     
-    // Dimensiones REALES de la imagen original proporcionada
+    // Dimensiones REALES de la imagen original
     const IMG_W = 1365;
     const IMG_H = 1024;
 
     /* --- DATOS DEL JUEGO --- */
-    // Coordenadas en píxeles absolutos de la imagen original
     const game1Targets = [
         { word: "Submeseta Norte", coords: "635,345,639,317,591,311,534,278,539,228,564,191,554,185,341,194,326,300,218,327,228,423,320,407,429,393,551,332" },
         { word: "Submeseta Sur", coords: "673,630,573,653,441,666,391,695,319,702,196,736,216,532,397,524,579,456,599,467,684,555,706,595,691,625" },
@@ -433,7 +431,7 @@
         { word: "Archipiélago Canario", coords: "1356,704,1355,978,889,977,888,702" }
     ];
 
-    const game2Targets = [...game1Targets]; // Mismos elementos, diferente imagen
+    const game2Targets = [...game1Targets]; 
 
     /* --- AUDIOS --- */
     const audioUrls = {
@@ -445,8 +443,8 @@
     };
 
     /* --- VARIABLES DE ESTADO --- */
-    let attemptsGame1 = 0;
-    let attemptsGame2 = 0;
+    let attemptsGame1 = 0; 
+    let attemptsGame2 = 0; 
     let successGame1 = 0;
     let successGame2 = 0;
     let currentGame = 1;
@@ -459,6 +457,7 @@
     let startTime;
     let totalTime = 0;
     let isHofLoading = false;
+    let timerInterval; // Variable para controlar el cronómetro
     
     const el = (id) => document.getElementById(id);
 
@@ -508,7 +507,14 @@
 
     function playSound(type) {
         if (isMuted) return;
-        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        // Solución para móviles: reanudar contexto si está suspendido
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
         
         fetch(audioUrls[type])
             .then(response => response.arrayBuffer())
@@ -545,6 +551,16 @@
     function startGame() {
         playSound('tap');
         startTime = Date.now();
+        
+        // --- INICIO DE LA CORRECCIÓN DEL CRONÓMETRO ---
+        clearInterval(timerInterval); 
+        timerInterval = setInterval(() => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const timerElement = el('timerGame' + currentGame);
+            if(timerElement) timerElement.textContent = formatTime(elapsed);
+        }, 100); // Actualiza cada 0.1 segundos
+        // --- FIN DE LA CORRECCIÓN ---
+
         showScreen('gameScreen1');
         initGame(1);
     }
@@ -665,6 +681,10 @@
     }
 
     function finishGame() {
+        // --- CORRECCIÓN: Detener el cronómetro al terminar ---
+        clearInterval(timerInterval);
+        // ----------------------------------------------------
+
         totalTime = (Date.now() - startTime) / 1000;
         const score = calculateScore();
         
@@ -676,7 +696,7 @@
             el('trophyBox').style.display = 'block';
             el('finalMsg').textContent = "¡Enhorabuena, puntuación máxima!";
             playSound('victory');
-            createConfetti(); // LLAMADA A LA FUNCIÓN COPIADA
+            startConfetti();
         } else {
             el('trophyBox').style.display = 'none';
             el('finalMsg').textContent = "¡Buen trabajo! Sigue practicando";
@@ -689,13 +709,16 @@
     function calculateScore() {
         const N = TOTAL_ELEMENTS_PER_GAME;
         
-        let totalClicks1 = N + attemptsGame1;
-        let totalClicks2 = N + attemptsGame2;
+        // Cálculo basado en eficiencia: Aciertos / (Aciertos + Errores)
+        // Si no hay errores, el ratio es 1 (100%).
+        let ratio1 = 1; 
+        if (attemptsGame1 > 0) ratio1 = N / (N + attemptsGame1);
         
-        let calc1 = totalClicks1 > 0 ? N / totalClicks1 : 1;
-        let calc2 = totalClicks2 > 0 ? N / totalClicks2 : 1;
+        let ratio2 = 1;
+        if (attemptsGame2 > 0) ratio2 = N / (N + attemptsGame2);
         
-        let finalScore = ((calc1 + calc2) / 2) * 100;
+        // Media de ambos juegos y conversión a porcentaje
+        let finalScore = ((ratio1 + ratio2) / 2) * 100;
         
         return Math.round(finalScore);
     }
@@ -791,22 +814,18 @@
         });
     }
 
-    /* --- CONFETTI EFFECT (COPIADO DEL MODELO) --- */
-    function createConfetti() {
-        for(let i=0;i<100;i++){
-            setTimeout(()=>{
-                const c = document.createElement('div');
-                c.className = 'confetti';
-                const x = Math.random() * window.innerWidth;
-                const tx = (Math.random() - 0.5) * 200;
-                c.style.left = x + 'px';
-                c.style.top = '-10px';
-                c.style.backgroundColor = ['#ff595e','#1982c4','#6a4c93','#ffca3a','#8ac926'][Math.floor(Math.random()*5)];
-                c.style.setProperty('--tx', tx + 'px');
-                c.style.setProperty('--ty', window.innerHeight + 20 + 'px');
-                document.body.appendChild(c);
-                setTimeout(() => c.remove(), 3000);
-            }, i * 20);
+    /* --- CONFETTI EFFECT --- */
+    function startConfetti() {
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            confetti.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+            confetti.style.setProperty('--ty', Math.random() * 300 + 100 + 'px');
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
         }
     }
 </script>
